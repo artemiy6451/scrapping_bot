@@ -1,19 +1,22 @@
 import asyncio
-import logging
-import sys
 
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
-from config import settings
-from routers.start import start_router
+from loguru import logger
+
+from app.config import settings
+from app.logging import setup_new_logger
+from app.routers.start import start_router
+
+setup_new_logger()
 
 dp = Dispatcher()
 dp.include_router(start_router)
 
 
 async def main() -> None:
-    print(settings.telegram_bot_token)
+    logger.debug("Starting telegram bot")
     bot = Bot(
         token=settings.telegram_bot_token,
         default=DefaultBotProperties(parse_mode=ParseMode.HTML),
@@ -22,5 +25,4 @@ async def main() -> None:
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO, stream=sys.stdout)
     asyncio.run(main())
