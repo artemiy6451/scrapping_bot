@@ -1,10 +1,11 @@
-from pydantic import BaseModel
+import uuid
+
+from app.schemas import Post
 
 
-class VKArticle(BaseModel):
-    group_name: str
-    text: str
-    likes: int
-    comments: int
+class VKPost(Post):
     share: int
-    link: str
+
+
+class VKPostWithID(VKPost):
+    id: uuid.UUID

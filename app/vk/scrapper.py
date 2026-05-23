@@ -3,7 +3,8 @@ import asyncio
 from loguru import logger
 from playwright.async_api import async_playwright
 
-from app.vk.utils import scrapping_page
+from app.vk.parser import VKParser
+from app.vk.service import VKParserService
 
 
 async def main() -> None:
@@ -11,7 +12,7 @@ async def main() -> None:
     async with async_playwright() as p:
         context = await p.chromium.launch_persistent_context(
             user_data_dir="data/profile",
-            headless=True,
+            headless=False,
             slow_mo=50,
             args=["--no-sandbox", "--disable-dev-shm-usage"],
         )
@@ -28,8 +29,12 @@ async def main() -> None:
         )
         logger.debug("Page opened")
 
-        articles = await scrapping_page(page, step=2)
-        logger.debug(f"Founded {len(articles)} articles.")
+        parser = VKParser(page=page, step=2)
+        posts = await parser.get_posts()
+        logger.debug(f"Founded {len(posts)} articles.")
+
+        parser_service = VKParserService()
+        await parser_service.add_posts(posts)
 
         await page.pause()
 
