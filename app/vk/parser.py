@@ -1,9 +1,10 @@
+import asyncio
+
 from loguru import logger
 from playwright.async_api import Error, Locator, Page
 
 from app.parser import Parser
-from app.schemas import Comment
-from app.vk.schemas import VKPost
+from app.vk.schemas import VKComment, VKPost, VKPostWithID
 
 
 class VKParser(Parser):
@@ -29,8 +30,86 @@ class VKParser(Parser):
         logger.debug("All step comleated.")
         return posts
 
-    async def get_comments_from_post(self, post: VKPost) -> list[Comment]:  # type: ignore
-        raise NotImplementedError
+    async def get_comments_from_post(self, post: VKPostWithID) -> list[VKComment]:
+        raw_comments = await self.__get_raw_comments(post)
+        comments = await self.__parse_comments(post, raw_comments)
+        return comments
+
+    async def __parse_comments(
+        self, post: VKPostWithID, raw_comments: list[Locator]
+    ) -> list[VKComment]:
+        comments: list[VKComment] = []
+
+        for index, comment in enumerate(raw_comments):
+            logger.debug(f"Parsing post {index + 1}/{len(raw_comments)}")
+            text = await self.__get_comment_text(comment)
+            if text == "":
+                continue
+
+            comments.append(
+                VKComment(
+                    post=post,
+                    author=await self.__get_comment_author_name(comment),
+                    text=await self.__get_comment_text(comment),
+                    likes=await self.__get_comment_likes(comment),
+                    author_link=await self.__get_comment_author_link(comment),
+                )
+            )
+
+        return comments
+
+    async def __get_raw_comments(self, post: VKPost) -> list[Locator]:
+        logger.debug(f"Opening page: {post.link}")
+        await self.page.goto(post.link, wait_until="load")
+        await asyncio.sleep(2)
+        raw_comments: list[Locator] = await self.page.get_by_test_id(
+            "wall_comments_comment_root"
+        ).all()
+        logger.debug(f"Found {len(raw_comments)} comments.")
+        return raw_comments
+
+    async def __get_comment_author_link(self, locator: Locator) -> str:
+        try:
+            author_link = await locator.get_by_test_id("comment-avatar").get_attribute(
+                "href"
+            )
+            if author_link is None:
+                return ""
+            return f"https://vk.com{author_link}"
+        except Error:
+            return ""
+
+    async def __get_comment_likes(self, locator: Locator) -> int:
+        try:
+            raw_likes = await locator.get_by_test_id("comment-like").inner_text(
+                timeout=1500
+            )
+            if raw_likes is None or raw_likes == "":
+                return 0
+            else:
+                return int(raw_likes)
+        except Error:
+            return 0
+
+    async def __get_comment_text(self, locator: Locator) -> str:
+        try:
+            text = await locator.get_by_test_id("comment-text").inner_text(timeout=1500)
+            if text is None:
+                return ""
+            return text
+        except Error:
+            return ""
+
+    async def __get_comment_author_name(self, locator: Locator) -> str:
+        try:
+            author = await locator.get_by_test_id("comment-owner").inner_text(
+                timeout=1500
+            )
+            if author is None:
+                return ""
+            return author
+        except Error:
+            return ""
 
     async def __get_raw_posts(self) -> list[Locator]:
         logger.debug("Starting scrapping VK feed page.")
@@ -58,7 +137,7 @@ class VKParser(Parser):
                     group_name=group_name,
                     text=await self.__get_text(raw_post),
                     likes=await self.__get_likes(raw_post),
-                    comments=await self.__get_comments_count(raw_post),
+                    comments_count=await self.__get_comments_count(raw_post),
                     share=await self.__get_share_count(raw_post),
                     link=await self.__get_post_link(raw_post),
                 )

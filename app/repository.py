@@ -1,5 +1,5 @@
 import uuid
-from typing import Any, Generic, Type, TypeVar
+from typing import Any, AsyncGenerator, Generic, Type, TypeVar
 
 from loguru import logger
 from sqlalchemy import (
@@ -26,6 +26,12 @@ class SQLAlchemyRepository(Generic[T]):
         logger.debug(
             "Setup repository with session: {} and model: {}", self.session, self.model
         )
+
+    async def get_item_iter(self) -> AsyncGenerator[T | None]:
+        async with self.session() as session:
+            stream = await session.stream(select(self.model).order_by(self.model.id))
+            async for row in stream:
+                yield row[0]
 
     async def find_one(self, filter: ColumnElement[bool]) -> T | None:
         logger.debug(
