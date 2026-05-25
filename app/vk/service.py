@@ -1,3 +1,4 @@
+import uuid
 from typing import AsyncGenerator
 
 from loguru import logger
@@ -13,6 +14,12 @@ class VKPostService:
         self.VKPostRepository: SQLAlchemyRepository[VKPostModel] = SQLAlchemyRepository(
             async_session_maker, VKPostModel
         )
+
+    async def get_post_by_id(self, id: uuid.UUID) -> VKPostWithID | None:
+        post = await self.VKPostRepository.find_one(filter=(VKPostModel.id == id))
+        if post is None:
+            return None
+        return post.to_read_model()
 
     async def find_post_by_text(self, text: str) -> VKPostWithID | None:
         post = await self.VKPostRepository.find_one(filter=(VKPostModel.text == text))

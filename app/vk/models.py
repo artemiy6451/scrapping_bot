@@ -45,7 +45,12 @@ class VKCommentModel(Base):
     likes: Mapped[int] = mapped_column(nullable=False, default=0)
     author_link: Mapped[str] = mapped_column(TEXT, nullable=False)
 
-    post: Mapped["VKPostModel"] = relationship("VKPostModel", back_populates="comments")
+    post: Mapped["VKPostModel"] = relationship(
+        "VKPostModel",
+        back_populates="comments",
+        lazy="joined",
+        innerjoin=True,
+    )
 
     def to_read_model(self) -> VKCommentWithID:
         return VKCommentWithID(
