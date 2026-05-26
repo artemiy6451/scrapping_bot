@@ -2,6 +2,7 @@ from sqlalchemy import BOOLEAN, TEXT, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models import Base
+from app.scaffolding_backend.models.moderation_label import CommentModerationLabel
 from app.vk.schemas import VKCommentWithID, VKPostWithID
 
 
@@ -50,6 +51,13 @@ class VKCommentModel(Base):
         back_populates="comments",
         lazy="joined",
         innerjoin=True,
+    )
+
+    moderation_label: Mapped["CommentModerationLabel"] = relationship(
+        "CommentModerationLabel",
+        back_populates="comment",
+        uselist=False,
+        cascade="all, delete-orphan",
     )
 
     def to_read_model(self) -> VKCommentWithID:
