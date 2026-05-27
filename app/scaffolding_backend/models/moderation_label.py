@@ -17,13 +17,6 @@ class CommentModerationLabel(Base):
 
     label: Mapped[str] = mapped_column(TEXT)
 
-    moderator_note: Mapped[str | None] = mapped_column(
-        TEXT,
-        nullable=True,
-    )
-
-    moderator_name: Mapped[str] = mapped_column(TEXT)
-
     created_at: Mapped[datetime] = mapped_column(
         default=datetime.utcnow,
     )

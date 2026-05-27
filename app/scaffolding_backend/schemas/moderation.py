@@ -1,11 +1,9 @@
+import uuid
+
 from pydantic import BaseModel
 
 
 class CreateModerationLabel(BaseModel):
-    comment_id: int
+    comment_id: uuid.UUID
 
     label: str
-
-    moderator_note: str | None = None
-
-    moderator_name: str

@@ -1,7 +1,7 @@
 """add comment moderation label model
 
 Revision ID: 77a2bebc8b4b
-Revises: 98c4e46ff526
+Revises: 9158f471747d
 Create Date: 2026-05-26 11:23:48.631148
 
 """
@@ -13,7 +13,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision: str = "77a2bebc8b4b"
-down_revision: Union[str, Sequence[str], None] = "98c4e46ff526"
+down_revision: Union[str, Sequence[str], None] = "9158f471747d"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

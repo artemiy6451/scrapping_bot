@@ -33,8 +33,6 @@ class ModerationService:
         label = CommentModerationLabel(
             comment_id=data.comment_id,
             label=data.label,
-            moderator_note=data.moderator_note,
-            moderator_name=data.moderator_name,
         )
 
         await self.repository.create_label(label)
