@@ -24,7 +24,7 @@ check: black ruff mypy pytest
 	@echo "All check passed!"
 
 run:
-	poetry run python $(SRC)main.py
+	poetry run python -m app.main
 
 migrate:
 	PYTHONPATH=. poetry run alembic upgrade head

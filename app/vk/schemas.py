@@ -5,6 +5,7 @@ from app.schemas import Comment, Post
 
 class VKPost(Post):
     share: int
+    likes: int
 
 
 class VKPostWithID(VKPost):
@@ -13,6 +14,7 @@ class VKPostWithID(VKPost):
 
 
 class VKComment(Comment[VKPostWithID]):
+    likes: int
     post: VKPostWithID
 
 

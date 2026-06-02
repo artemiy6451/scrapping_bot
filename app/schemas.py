@@ -6,7 +6,6 @@ from pydantic import BaseModel
 class Post(BaseModel):
     group_name: str
     text: str
-    likes: int
     comments_count: int
     link: str
 
@@ -18,5 +17,4 @@ class Comment(BaseModel, Generic[T]):
     post: T
     author: str
     text: str
-    likes: int
     author_link: str
