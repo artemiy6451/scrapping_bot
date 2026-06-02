@@ -10,6 +10,7 @@ from app.models import Base
 from app.scaffolding_backend.models.moderation_label import (
     CommentModerationLabel,  # noqa: F401
 )
+from app.telegram.models import TelegramPostModel  # noqa: F401
 from app.vk.models import VKPostModel  # noqa: F401
 
 # this is the Alembic Config object, which provides
