@@ -62,5 +62,5 @@ async def run_vk_scraper() -> None:
         await parse_and_save_comments_from_post(
             comment_parser, post_service, comment_service
         )
-        await page.pause()
+        # await page.pause()
         await context.close()

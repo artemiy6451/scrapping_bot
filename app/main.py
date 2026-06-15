@@ -3,8 +3,7 @@ import asyncio
 from loguru import logger
 
 from app.telegram.runner import run_telegram_scraper
-
-# from app.vk.runner import run_vk_scraper
+from app.vk.runner import run_vk_scraper
 
 
 async def main() -> None:
@@ -16,7 +15,7 @@ async def main() -> None:
 
     # Запускаем оба скрапера параллельно
     await asyncio.gather(
-        # run_vk_scraper(),
+        run_vk_scraper(),
         run_telegram_scraper(),
     )
 

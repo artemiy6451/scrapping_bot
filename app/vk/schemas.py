@@ -20,3 +20,4 @@ class VKComment(Comment[VKPostWithID]):
 
 class VKCommentWithID(VKComment):
     id: uuid.UUID
+    label: str

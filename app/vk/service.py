@@ -1,4 +1,6 @@
+import csv
 import uuid
+from datetime import datetime
 from typing import AsyncGenerator
 
 from loguru import logger
@@ -97,3 +99,29 @@ class VKCommentService:
         if comment is None:
             return None
         return comment.to_read_model()
+
+    async def generate_comments_dataset(self) -> None:
+        comments = await self.VKCommentRepository.find_all(limit=10**10)
+
+        if comments is None:
+            return None
+
+        data: list[list[str | uuid.UUID]] = []
+        data.append(["ID", "Post Text", "Comment Text", "Label"])
+
+        for comment in comments:
+            parsed_comment = comment.to_read_model()
+            data.append(
+                [
+                    parsed_comment.id,
+                    parsed_comment.post.text.strip().replace("\n", "").replace(",", ""),
+                    parsed_comment.text.strip().replace("\n", "").replace(",", ""),
+                    parsed_comment.label,
+                ]
+            )
+
+        with open(
+            f"data/datasets/vk_{datetime.now()}.csv", mode="w", newline=""
+        ) as file:
+            writer = csv.writer(file)
+            writer.writerows(data)

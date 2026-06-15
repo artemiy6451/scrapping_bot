@@ -7,9 +7,6 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from app.config import settings
 from app.models import Base
-from app.scaffolding_backend.models.moderation_label import (
-    CommentModerationLabel,  # noqa: F401
-)
 from app.telegram.models import TelegramPostModel  # noqa: F401
 from app.vk.models import VKPostModel  # noqa: F401
 

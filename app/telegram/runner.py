@@ -1,9 +1,7 @@
 from loguru import logger
 from playwright.async_api import BrowserContext, Page, Playwright, async_playwright
 
-from app.telegram.parsers.comment import TelegramCommentParser
 from app.telegram.parsers.post import TelegramPostParser
-from app.telegram.service import TelegramCommentService, TelegramPostService
 
 
 async def create_browser_context(playwright: Playwright) -> BrowserContext:
@@ -18,9 +16,7 @@ async def create_browser_context(playwright: Playwright) -> BrowserContext:
     return context
 
 
-async def parse_and_save_posts(
-    page: Page, parser: TelegramPostParser, service: TelegramPostService
-) -> None:
+async def parse_posts(page: Page, parser: TelegramPostParser) -> None:
     logger.debug("Opening page...")
     await page.goto(
         "https://web.telegram.org/",
@@ -31,22 +27,6 @@ async def parse_and_save_posts(
 
     posts = await parser.get_posts()
     logger.debug(f"Founded {len(posts)} posts.")
-    await service.add_posts(posts)
-
-
-async def parse_and_save_comments_from_post(
-    comment_parser: TelegramCommentParser,
-    post_service: TelegramPostService,
-    comment_service: TelegramCommentService,
-) -> None:
-    logger.debug("Starting parse comments from data base posts...")
-    async for post in post_service.get_post_iter():
-        logger.debug(f"Found new post with link: {post.link}")
-        comments = await comment_parser.get_comments_from_post(post)
-        if comments is None:
-            continue
-        await comment_service.add_comments(comments)
-    logger.debug("All comments parsed.")
 
 
 async def run_telegram_scraper() -> None:
@@ -59,16 +39,12 @@ async def run_telegram_scraper() -> None:
         logger.debug("Created new page.")
 
         post_parser = TelegramPostParser(page=page, step=20)
-        # comment_parser = TelegramCommentParser(page=page)
-        post_service = TelegramPostService()
-        # comment_service = TelegramCommentService()
 
-        await parse_and_save_posts(page, post_parser, post_service)
-        # await parse_and_save_comments_from_post(
-        # comment_parser, post_service, comment_service
-        # )
+        await parse_posts(page, post_parser)
+        # cs = TelegramCommentService()
+        # await cs.generate_comments_dataset()
 
-        await page.pause()
+        # await page.pause()
         await context.close()
 
     logger.info("Telegram scraping completed")

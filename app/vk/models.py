@@ -1,8 +1,10 @@
-from sqlalchemy import BOOLEAN, TEXT, ForeignKey
+import uuid
+from datetime import datetime
+
+from sqlalchemy import BOOLEAN, TEXT, TIMESTAMP, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models import Base
-from app.scaffolding_backend.models.moderation_label import CommentModerationLabel
 from app.vk.schemas import VKCommentWithID, VKPostWithID
 
 
@@ -53,10 +55,11 @@ class VKCommentModel(Base):
         innerjoin=True,
     )
 
-    moderation_label: Mapped["CommentModerationLabel"] = relationship(
-        "CommentModerationLabel",
+    comment_label: Mapped["VKCommentModerationLabel"] = relationship(
+        "VKCommentModerationLabel",
         back_populates="comment",
         uselist=False,
+        lazy="joined",
         cascade="all, delete-orphan",
     )
 
@@ -68,4 +71,28 @@ class VKCommentModel(Base):
             text=self.text,
             likes=self.likes,
             author_link=self.author_link,
+            label=self.comment_label.label,
         )
+
+
+class VKCommentModerationLabel(Base):
+    __tablename__ = "vk_labels"
+
+    comment_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("VKComments.id"),
+        unique=True,
+        nullable=True,
+    )
+
+    label: Mapped[str] = mapped_column(TEXT, nullable=False)
+
+    comment: Mapped["VKCommentModel"] = relationship(
+        "VKCommentModel",
+        back_populates="comment_label",
+        lazy="joined",
+        uselist=False,
+    )
+
+    created_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP, default=datetime.utcnow, nullable=False
+    )

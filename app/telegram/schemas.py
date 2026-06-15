@@ -18,3 +18,4 @@ class TelegramComment(Comment[TelegramPostWithID]):
 
 class TelegramCommentWithID(TelegramComment):
     id: uuid.UUID
+    label: str

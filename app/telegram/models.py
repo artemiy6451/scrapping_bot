@@ -1,4 +1,7 @@
-from sqlalchemy import BOOLEAN, TEXT, ForeignKey
+import uuid
+from datetime import datetime
+
+from sqlalchemy import BOOLEAN, TEXT, TIMESTAMP, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models import Base
@@ -48,6 +51,14 @@ class TelegramCommentModel(Base):
         innerjoin=True,
     )
 
+    comment_label: Mapped["TelegramCommentModerationLabel"] = relationship(
+        "TelegramCommentModerationLabel",
+        back_populates="comment",
+        uselist=False,
+        lazy="joined",
+        cascade="delete",
+    )
+
     def to_read_model(self) -> TelegramCommentWithID:
         return TelegramCommentWithID(
             post=self.post.to_read_model(),
@@ -55,4 +66,28 @@ class TelegramCommentModel(Base):
             text=self.text,
             author_link=self.author_link,
             id=self.id,
+            label=self.comment_label.label if self.comment_label else "",
         )
+
+
+class TelegramCommentModerationLabel(Base):
+    __tablename__ = "telegram_labels"
+
+    comment_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("TelegramComments.id"),
+        unique=True,
+        nullable=True,
+    )
+
+    label: Mapped[str] = mapped_column(TEXT, nullable=False)
+
+    comment: Mapped["TelegramCommentModel"] = relationship(
+        "TelegramCommentModel",
+        back_populates="comment_label",
+        lazy="joined",
+        uselist=False,
+    )
+
+    created_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP, default=datetime.utcnow, nullable=False
+    )

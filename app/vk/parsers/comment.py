@@ -41,6 +41,8 @@ class VKCommentParser(CommentParser):
         return comments
 
     async def __get_raw_comments(self, post: VKPost) -> list[Locator]:
+        if post.link == "":
+            return []
         logger.debug(f"Opening page: {post.link}")
         await self.page.goto(post.link, wait_until="load")
         await asyncio.sleep(2)
@@ -69,8 +71,9 @@ class VKCommentParser(CommentParser):
             if not buttons:
                 break
 
-            await buttons[0].click()
-            logger.debug("Open more comments on page")
+            for _ in range(5):
+                await buttons[0].click(timeout=500)
+                logger.debug("Open more comments on page")
 
             try:
                 await self.page.wait_for_load_state("networkidle", timeout=5000)
